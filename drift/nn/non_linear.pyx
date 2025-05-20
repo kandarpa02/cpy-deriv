@@ -1,0 +1,46 @@
+# cython: boundscheck=False, wraparound=False
+# distutils: language=c++
+
+from drift.engine import tensor
+from drift.utils.helpers import *
+from drift.math.matrix_cpu import *
+
+cdef relu_grad(object x):
+    cdef int x_m, x_n, i, j
+    x,_ = fix_dim(x, 0)
+    x_m = len(x)
+    x_n = len(x[0])
+    grad = zeros_like_ct(x)
+    for i in range(x_m):
+        for j in range(len(x[i])):
+            if x[i][j]>0:
+                grad[i][j] += 1
+    out = check_dim(grad)
+    if get_shape(out) == (1,1):
+        return out[0]
+    return out
+
+
+cdef class ReLU:
+    def __init__(self) -> None:
+        pass
+    @staticmethod
+    def __call__(object _obj):
+        cdef object out
+        if not isinstance(_obj, tensor):
+            _obj = tensor(_obj)
+        out = tensor(maximum(_obj.data, 0), (_obj,), need_grad=True)
+
+        def reluBackward():
+            obj_grad = relu_grad(_obj.data)
+            _obj.grad = addition(_obj.grad, multiplication(obj_grad, out.grad))
+
+        out._back = reluBackward
+        return out
+
+cdef class Tanh:
+    def __init__(self) -> None:
+        pass
+    @staticmethod
+    def __call__(object _obj):
+        pass

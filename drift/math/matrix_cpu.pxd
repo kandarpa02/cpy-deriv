@@ -1,0 +1,15 @@
+# distutils: language=c++
+
+cpdef object fix_dim(object a, object b)
+cpdef object reduce_grad(object grad, tuple original_shape)
+cpdef tuple get_shape(list a)
+cpdef list check_dim(list a)
+cpdef list matmul(list a, list b)
+cpdef list transpose(list A)
+cpdef list expand(mat, int target_m, int target_n)
+cpdef object broadcast(object a, object b)
+cpdef object addition(object a, object b)
+cpdef object array_sum(object A, object axis)
+cpdef object multiplication(object a, object b)
+cpdef list ones_like_ct(list A)
+cpdef list zeros_like_ct(list A)
