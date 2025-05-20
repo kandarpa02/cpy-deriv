@@ -175,3 +175,5 @@ cython_debug/
 
 # build 
 build.py
+*.cpp
+*.c
