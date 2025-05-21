@@ -25,7 +25,7 @@ extensions = cythonize([
 ])
 
 setup(
-    name="drift",
+    name="deriv",
     version="0.1.0",
     author="Kandarpa Sarkar",
     author_email="kandarpaexe@gmail.com",
