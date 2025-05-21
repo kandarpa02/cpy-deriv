@@ -1,11 +1,11 @@
-from drift.math.matrix_cpu import *
+from deriv.math.matrix_cpu import *
 from typing import Callable
 
 class tensor:
     def __init__(self, data, parents=(), need_grad=False):
         self.data = data
-        self.grad = zeros_like_ct(self.data) if isinstance(self.data, list) else 0.0  # type: ignore
-        self.shape = get_shape(self.data) if isinstance(self.data, list) else ()  # type: ignore
+        self.grad = zeros_like_ct(self.data) if isinstance(self.data, list) else 0.0   
+        self.shape = get_shape(self.data) if isinstance(self.data, list) else ()   
         self.parents = parents
         def noop():
             pass
@@ -20,8 +20,8 @@ class tensor:
         Args:
             fn: takes a function, apllies the funtion element wise
         for example:
-        >>> import drift as ft
-        >>> a = ft.tensor([[1,2,3],[4,5,6]])
+        >>> import deriv as dv
+        >>> a = dv.tensor([[1,2,3],[4,5,6]])
         >>> a
         tensor([[1., 2., 3.],
                 [4., 5., 6.]])
@@ -157,13 +157,13 @@ class tensor:
         if isinstance(other, (int, float, list)):
             other = tensor(other)
 
-        added = addition(self.data, other.data) # type: ignore
+        added = addition(self.data, other.data)  
 
         out = tensor(added, (self, other))
 
         def addBackward():
-            self.grad = addition(self.grad, reduce_grad(out.grad, self.shape)) # type: ignore
-            other.grad = addition(other.grad, reduce_grad(out.grad, other.shape)) # type: ignore
+            self.grad = addition(self.grad, reduce_grad(out.grad, self.shape))  
+            other.grad = addition(other.grad, reduce_grad(out.grad, other.shape))  
 
         out._back = addBackward
         return out
@@ -176,7 +176,7 @@ class tensor:
         if isinstance(other, (int, float, list)):
             other = tensor(other)
 
-        multiplied = multiplication(self.data, other.data) # type: ignore
+        multiplied = multiplication(self.data, other.data)  
 
         out = tensor(multiplied, (self, other))
 
@@ -184,23 +184,23 @@ class tensor:
                 
             grad_out = out.grad
 
-            grad_self_matrix = multiplication(other.data, grad_out) # type: ignore
+            grad_self_matrix = multiplication(other.data, grad_out)  
 
             if self.shape == ():
-                grad_self = array_sum(grad_self_matrix, axis=None) # type: ignore
+                grad_self = array_sum(grad_self_matrix, axis=None)  
             else:
-                grad_self = reduce_grad(grad_self_matrix, self.shape) # type: ignore
+                grad_self = reduce_grad(grad_self_matrix, self.shape)  
 
-            self.grad = addition(self.grad, grad_self) # type: ignore
+            self.grad = addition(self.grad, grad_self)  
 
-            grad_other_matrix = multiplication(self.data, grad_out) # type: ignore
+            grad_other_matrix = multiplication(self.data, grad_out)  
 
             if other.shape == ():  # scalar case
-                grad_other = array_sum(grad_other_matrix, axis=None) # type: ignore
+                grad_other = array_sum(grad_other_matrix, axis=None)  
             else:
-                grad_other = reduce_grad(grad_other_matrix, other.shape) # type: ignore
+                grad_other = reduce_grad(grad_other_matrix, other.shape)  
 
-            other.grad = addition(other.grad, grad_other) # type: ignore
+            other.grad = addition(other.grad, grad_other)  
 
 
         out._back = mulBackward
@@ -211,25 +211,25 @@ class tensor:
     
     
     def __matmul__(self, other):
-        out = tensor(matmul(self.data, other.data), (self, other)) # type: ignore
+        out = tensor(matmul(self.data, other.data), (self, other))  
 
         def matmulBackward():
-            self.grad = addition(self.grad, matmul(out.grad, transpose(other.data)))  # type: ignore
-            other.grad = addition(other.grad, matmul(transpose(self.data), out.grad)) # type: ignore
+            self.grad = addition(self.grad, matmul(out.grad, transpose(other.data)))   
+            other.grad = addition(other.grad, matmul(transpose(self.data), out.grad))  
 
         out._back = matmulBackward
         return out
 
     @property
     def T(self):
-        out = tensor(transpose(self.data), (self,)) # type: ignore
+        out = tensor(transpose(self.data), (self,))  
         return out
 
     def sum(self, axis=None):
-        out = tensor(array_sum(self.data, axis), (self,)) # type: ignore
+        out = tensor(array_sum(self.data, axis), (self,))  
 
         def sumBackward():
-            self.grad = multiplication(out.grad, ones_like_ct(self.data)) # type: ignore
+            self.grad = multiplication(out.grad, ones_like_ct(self.data))  
             
         out._back = sumBackward
         return out
@@ -238,10 +238,10 @@ class tensor:
 def ones_like(A):
     if isinstance(A, tensor):
         A = A.data
-    return tensor(ones_like_ct(A)) # type: ignore
+    return tensor(ones_like_ct(A))  
 
 def zeros_like(A):
     if isinstance(A, tensor):
         A = A.data
-    return tensor(zeros_like_ct(A)) # type: ignore
+    return tensor(zeros_like_ct(A))  
 
