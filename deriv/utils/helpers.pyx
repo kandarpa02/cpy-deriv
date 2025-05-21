@@ -1,9 +1,9 @@
 # cython: boundscheck=False, wraparound=False
 # distutils: language=c++
 
-from drift.engine import *
-from drift.math.matrix_cpu import *
-from drift.utils.util_excp import *
+from  deriv.engine import *
+from  deriv.math.matrix_cpu import *
+from  deriv.utils.util_excp import *
 
 cpdef object maximum(object a, object b):
     """
@@ -12,7 +12,13 @@ cpdef object maximum(object a, object b):
     cdef int a_m, a_n, b_m, b_n, out_m, out_n, i
     cdef list result = []
 
+    if isinstance(a, tensor):
+        a = a.data
+    if isinstance(b, tensor):
+        b = b.data
+
     a, b = fix_dim(a, b)
+    
     a_m, a_n = len(a), len(a[0])
     b_m, b_n = len(b), len(b[0])
 
@@ -24,10 +30,10 @@ cpdef object maximum(object a, object b):
     for i in range(out_m):
         result.append([max(j, k) for j, k in zip(a_full[i], b_full[i])])
 
-    out = check_dim(result)
-    if get_shape(out) == (1, 1):
-        return out[0][0]
-    return out
+    if not isinstance(result[0][0], list) and get_shape(result) == (1, 1):
+        return result[0][0]
+    else:
+        return check_dim(result)
 
 
 cpdef object _argmax(object a, object axis):
@@ -37,7 +43,8 @@ cpdef object _argmax(object a, object axis):
     cdef int i, j, k, idx
     cdef float val, max_val
     cdef list result, pair, result_idx
-    a = tensor(a).data
+    if isinstance(a, tensor):
+        a = a.data
     a, _ = fix_dim(a, 0)
 
     if axis is None:

@@ -126,15 +126,15 @@ class tensor:
 
     def backward(self, grad=None):
         if grad is None:
+            self_data, _ = fix_dim(self.data, 0)
             if isinstance(self.data, list):
-                if not (len(self.data) == 1 and len(self.data[0]) == 1):
+                if not (len(self_data) == 1 and len(self_data[0]) == 1):
                     raise RuntimeError("grad can be implicitly created only for scalar outputs. "
                                     "Use `backward(grad)` to supply the gradient manually.")
                 grad = [[1.0]]
             else:
                 grad = 1.0
 
-        # If grad is a tensor object, extract the raw data
         self.grad = grad.data if isinstance(grad, tensor) else grad
 
         visited = set()

@@ -181,6 +181,8 @@ cpdef list matmul(list a, list b):                                              
 
 
 cpdef list transpose(list A):
+    A, _ = fix_dim(A, 0)
+
     cdef int m = len(A)
     cdef int n = len(A[0])
 
@@ -203,6 +205,8 @@ cpdef list transpose(list A):
 
 
 cpdef list expand(mat, int target_m, int target_n):
+    mat, _ = fix_dim(mat, 0)
+    
     cdef int orig_m = len(mat)
     cdef int orig_n = len(mat[0])
 

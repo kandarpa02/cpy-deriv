@@ -1,10 +1,10 @@
 # cython: boundscheck=False, wraparound=False
 # distutils: language=c++
 
-from drift.engine import tensor
-from drift.utils.helpers import *
-from drift.math.matrix_cpu import *
-from drift.math.math_cpu import *
+from  deriv.engine import tensor
+from  deriv.utils.helpers import *
+from  deriv.math.matrix_cpu import *
+from  deriv.math.math_cpu import *
 
 cdef relu_grad(object x):
     cdef int x_m, x_n, i, j
@@ -28,8 +28,17 @@ cdef class ReLU:
     @staticmethod
     def __call__(object _obj):
         cdef object out
+
         if not isinstance(_obj, tensor):
+            _obj, _ = fix_dim(_obj, 0)
             _obj = tensor(_obj)
+
+        elif isinstance(_obj, tensor):
+            _obj.data, _ = fix_dim(_obj.data, 0)
+
+        else:
+            raise ValueError("Object {type(_obj)} is not supported")
+
         out = tensor(maximum(_obj.data, 0), (_obj,), need_grad=True)
 
         def reluBackward():
@@ -47,7 +56,15 @@ cdef class Tanh:
     def __call__(object _obj):
         cdef object out
         if not isinstance(_obj, tensor):
+            _obj, _ = fix_dim(_obj, 0)
             _obj = tensor(_obj)
+
+        elif isinstance(_obj, tensor):
+            _obj.data, _ = fix_dim(_obj.data, 0)
+
+        else:
+            raise ValueError("Object {type(_obj)} is not supported")
+            
         out = _obj.apply_fn(tanh_f)
         out.parents = (_obj, )
 
