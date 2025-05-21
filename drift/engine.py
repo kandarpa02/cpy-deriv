@@ -1,5 +1,6 @@
 from drift.math.matrix_cpu import *
 from typing import Callable
+
 class tensor:
     def __init__(self, data, parents=(), need_grad=False):
         self.data = data
@@ -11,7 +12,32 @@ class tensor:
         self._back: Callable[[], None] = noop
         self.need_grad = need_grad
         self.grid_view:tuple = (5,6)
+    
+    def apply_fn(self, fn=lambda:None):
+        """
+        `apply_fn` can be used for implementing custom funcs
+        on a tensor.
+        Args:
+            fn: takes a function, apllies the funtion element wise
+        for example:
+        >>> import drift as ft
+        >>> a = ft.tensor([[1,2,3],[4,5,6]])
+        >>> a
+        tensor([[1., 2., 3.],
+                [4., 5., 6.]])
+        >>> def f(x): return 1-x**2
+        ... 
+        >>> a.apply_fn(f)
+        tensor([[  0.,  -3.,  -8.],
+                [-15., -24., -35.]])
+        """
 
+        self.data, _ = fix_dim(self.data, 0)
+        del _
+
+        new_data = [[fn(x) for x in row] for row in self.data]
+        return tensor(new_data)
+    
     def __repr__(self):
         def format_element(e):
             if e == '...':

@@ -11,19 +11,20 @@ cdef extern from 'math.h':
     float tanf(float)
 
 
-cdef float exp_f(float x): return expf(x)
+cpdef float exp_f(float x): return expf(x)
 
-cdef float log_f(float x): return logf(x)
+cpdef float log_f(float x): return logf(x)
 
-cdef float log10_f(float x): return log10f(x)
+cpdef float log10_f(float x): return log10f(x)
 
-cdef float tanh_f(float x): return tanhf(x)
+cpdef float tanh_f(float x): return tanhf(x)
 
-cdef float sin_f(float x): return sinf(x)
+cpdef float sin_f(float x): return sinf(x)
 
-cdef float cos_f(float x): return cosf(x)
+cpdef float cos_f(float x): return cosf(x)
 
-cdef float tan_f(float x): return tanhf(x)
+cpdef float tan_f(float x): return tanhf(x)
+
 
 
 
@@ -37,17 +38,18 @@ cdef extern from 'math.h':
     double tan(double)
 
 
-cdef double exp_d(double x): return exp(x)
+cpdef double exp_d(double x): return exp(x)
 
-cdef double log_d(double x): return log(x)
+cpdef double log_d(double x): return log(x)
 
-cdef double log10_d(double x): return log10(x)
+cpdef double log10_d(double x): return log10(x)
 
-cdef double tanh_d(double x): return tanh(x)
+cpdef double tanh_d(double x): return tanh(x)
 
-cdef double sin_d(double x): return sin(x)
+cpdef double sin_d(double x): return sin(x)
 
-cdef double cos_d(double x): return cos(x)
+cpdef double cos_d(double x): return cos(x)
 
-cdef double tan_d(double x): return tanh(x)
+cpdef double tan_d(double x): return tanh(x)
+
 

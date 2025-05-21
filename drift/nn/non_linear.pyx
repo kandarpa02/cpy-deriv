@@ -4,6 +4,7 @@
 from drift.engine import tensor
 from drift.utils.helpers import *
 from drift.math.matrix_cpu import *
+from drift.math.math_cpu import *
 
 cdef relu_grad(object x):
     cdef int x_m, x_n, i, j
@@ -38,9 +39,24 @@ cdef class ReLU:
         out._back = reluBackward
         return out
 
+
 cdef class Tanh:
     def __init__(self) -> None:
         pass
     @staticmethod
     def __call__(object _obj):
-        pass
+        cdef object out
+        if not isinstance(_obj, tensor):
+            _obj = tensor(_obj)
+        out = _obj.apply_fn(tanh_f)
+        out.parents = (_obj, )
+
+        def tanhBackward():
+            def th_grad(x): 
+                return 1 - x**2
+
+            obj_grad = out.apply_fn(th_grad).data
+            _obj.grad = addition(_obj.grad, multiplication(obj_grad, out.grad))
+
+        out._back = tanhBackward
+        return out
