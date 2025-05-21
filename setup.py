@@ -26,7 +26,7 @@ extensions = cythonize([
 
 setup(
     name="deriv",
-    version="0.0.1a0",
+    version="0.0.1a1",
     author="Kandarpa Sarkar",
     author_email="kandarpaexe@gmail.com",
     description="A highly efficient autodiff library with a NumPy-like API",
