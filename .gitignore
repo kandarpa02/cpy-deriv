@@ -174,8 +174,8 @@ cython_debug/
 .pypirc
 
 # Cython build artifacts
-*.c
-*.cpp
+*\.c
+*\.cpp
 *.so
 *.pyd
 build/
