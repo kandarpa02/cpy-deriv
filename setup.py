@@ -3,23 +3,23 @@ from Cython.Build import cythonize
 
 extensions = cythonize([
     Extension(
-        name="drift.utils.helpers",
-        sources=["drift/utils/helpers.pyx"],
+        name="deriv.utils.helpers",
+        sources=["deriv/utils/helpers.pyx"],
         language="c++"
     ),
     Extension(
-        name="drift.math.math_cpu",
-        sources=["drift/math/math_cpu.pyx"],
+        name="deriv.math.math_cpu",
+        sources=["deriv/math/math_cpu.pyx"],
         language="c++"
     ),
     Extension(
-        name="drift.math.matrix_cpu",
-        sources=["drift/math/matrix_cpu.pyx"],
+        name="deriv.math.matrix_cpu",
+        sources=["deriv/math/matrix_cpu.pyx"],
         language="c++"
     ),
     Extension(
-        name="drift.nn.non_linear",
-        sources=["drift/nn/non_linear.pyx"],
+        name="deriv.nn.non_linear",
+        sources=["deriv/nn/non_linear.pyx"],
         language="c++"
     ),
 ])
