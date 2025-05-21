@@ -3,6 +3,7 @@
 
 from drift.engine import *
 from drift.math.matrix_cpu import *
+from drift.utils.util_excp import *
 
 cpdef object maximum(object a, object b):
     """
@@ -66,8 +67,19 @@ cpdef object _argmax(object a, object axis):
             result_idx.append(idx)
         return tensor(result_idx)
 
+    elif axis == 1:
+        result_idx = []
+        for i in range(len(a)):
+            max_val = a[i][0]
+            idx = 0
+            for k, val in enumerate(a[i]):
+                if val > max_val:
+                    max_val = val
+                    idx = k
+            result_idx.append(idx)
+        return tensor(result_idx)
     else:
-        raise ValueError("Only axis=None and axis=0 are supported currently.")
+        raise AxisError(axis)
 
 
 def argmax(a, axis=None):
