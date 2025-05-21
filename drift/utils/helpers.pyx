@@ -5,72 +5,72 @@ from drift.engine import *
 from drift.math.matrix_cpu import *
 
 cpdef object maximum(object a, object b):
+    """
+    Element-wise maximum between two tensors (broadcasted if necessary).
+    """
     cdef int a_m, a_n, b_m, b_n, out_m, out_n, i
-    cdef list result, out
+    cdef list result = []
 
     a, b = fix_dim(a, b)
-    a_m = len(a)
-    a_n = len(a[0])
-    b_m = len(b)
-    b_n = len(b[0])
+    a_m, a_n = len(a), len(a[0])
+    b_m, b_n = len(b), len(b[0])
 
-    out_m = max(a_m, b_m)
-    out_n = max(a_n, b_n)
-
-    result = [[] for _ in range(out_m)]
+    out_m, out_n = max(a_m, b_m), max(a_n, b_n)
 
     a_full = expand(a, out_m, out_n)
     b_full = expand(b, out_m, out_n)
 
     for i in range(out_m):
-        for j, k in zip(a_full[i], b_full[i]):
-            result[i].append(max(j,k))
+        result.append([max(j, k) for j, k in zip(a_full[i], b_full[i])])
+
     out = check_dim(result)
-
-    if get_shape(out) == (1,1):
-        return out[0]
-
+    if get_shape(out) == (1, 1):
+        return out[0][0]
     return out
 
+
 cpdef object _argmax(object a, object axis):
-
-    if isinstance(a, (int, tuple, list)):
-        a = tensor(a)
-    cdef int ixd, i
-    a, _ = fix_dim(a.data, 0)
-    cdef list result, result_idx, pair
+    """
+    Core argmax function supporting flattened and axis=0.
+    """
+    cdef int i, j, k, idx
     cdef float val, max_val
+    cdef list result, pair, result_idx
+    a = tensor(a).data
+    a, _ = fix_dim(a, 0)
+
     if axis is None:
+        # Flatten
         result = []
-        for i in range(len(a)):
-            for j in a[i]:
-                result.append(j)
+        for row in a:
+            result.extend(row)
 
-        a_flat = result
-
-        max_val, idx = a_flat[0], 0
-        for i, val in enumerate(a_flat):
-            if val>max_val:
-                max_val, idx = val, i
+        max_val = result[0]
+        idx = 0
+        for i, val in enumerate(result):
+            if val > max_val:
+                max_val = val
+                idx = i
         return tensor(idx)
 
-    elif axis==0:
+    elif axis == 0:
         result_idx = []
-
-        for i in range(len(a[0])):
-            pair = []
-            for j in a:
-                pair.append(j[i])
-                max_val, idx = pair[0], 0
-                for k, val in enumerate(pair):
-                    if val>max_val:
-                        max_val, idx = val, k
+        for i in range(len(a[0])):  # column-wise
+            pair = [row[i] for row in a]
+            max_val = pair[0]
+            idx = 0
+            for k, val in enumerate(pair):
+                if val > max_val:
+                    max_val = val
+                    idx = k
             result_idx.append(idx)
         return tensor(result_idx)
 
+    else:
+        raise ValueError("Only axis=None and axis=0 are supported currently.")
+
 
 def argmax(a, axis=None):
-
     """
     Parameters
     ----------
@@ -81,22 +81,14 @@ def argmax(a, axis=None):
 
     Returns
     -------
-    int or ndarray
-        Index (or indices) of the maximum values.
+    int or tensor
+        Index/indices of the maximum values.
 
     Examples
     --------
-    >>> import drift as ft
-    >>> x = [[1, 2, 4], [5, 6, 6]]
-    >>> ft.argmax(x)
+    >>> argmax([[1, 2, 4], [5, 6, 6]])
     tensor(4)
-    >>> ft.argmax(x, axis=0)
+    >>> argmax([[1, 2, 4], [5, 6, 6]], axis=0)
     tensor([1, 1, 1])
     """
-
     return _argmax(a, axis)
-
-
-
-        
-    
