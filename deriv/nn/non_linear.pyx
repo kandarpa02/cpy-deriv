@@ -66,6 +66,12 @@ cdef class Tanh:
             raise ValueError("Object {type(_obj)} is not supported")
             
         out = _obj.apply_fn(tanh_f)
+
+        if get_shape(out.data) == (1,1):
+            out.data = out.data[0][0]
+        else:
+            out.data = check_dim(out.data)
+
         out.parents = (_obj, )
 
         def tanhBackward():
