@@ -1,45 +1,35 @@
-from deriv.math.matrix_cpu import *
 from typing import Callable
+import numpy as np
 
-class tensor:
+def unbroadcast(grad, target_shape):
+    """Reduces gradient to the original broadcasted shape."""
+    while len(grad.shape) > len(target_shape):
+        grad = grad.sum(axis=0)
+
+    for i, dim in enumerate(target_shape):
+        if dim == 1:
+            grad = grad.sum(axis=i, keepdims=True)
+
+    return grad
+
+class array:
     def __init__(self, data, parents=(), need_grad=False):
-        self.data = data
-        self.grad = zeros_like_ct(self.data) if isinstance(self.data, list) else 0.0   
-        self.shape = get_shape(self.data) if isinstance(self.data, list) else ()   
+        self.data = np.array(data) if not isinstance(data, np.ndarray) else data
+        self.grad = np.zeros_like(self.data) if isinstance(self.data, list) else 0.0
+        self.shape = self.data.shape if isinstance(self.data, np.ndarray) else ()
         self.parents = parents
         def noop():
             pass
         self._back: Callable[[], None] = noop
         self.need_grad = need_grad
         self.grid_view:tuple = (5,6)
-    
-    def apply_fn(self, fn=lambda:None):
-        """
-        `apply_fn` can be used for implementing custom funcs
-        on a tensor.
-        Args:
-            fn: takes a function, apllies the funtion element wise
-        for example:
-        >>> import deriv as dv
-        >>> a = dv.tensor([[1,2,3],[4,5,6]])
-        >>> a
-        tensor([[1., 2., 3.],
-                [4., 5., 6.]])
-        >>> def f(x): return 1-x**2
-        ... 
-        >>> a.apply_fn(f)
-        tensor([[  0.,  -3.,  -8.],
-                [-15., -24., -35.]])
-        """
-
-        self.data, _ = fix_dim(self.data, 0)
-        del _
-
-        new_data = [[fn(x) for x in row] for row in self.data]
-        return tensor(new_data)
+        self.is_scaler = True if self.data.shape == (1,1) else False
     
     def __repr__(self):
         def format_element(e):
+            # Handle array-like elements (e.g., numpy scalars)
+            if hasattr(e, 'item'):  # Convert numpy scalars to Python floats
+                e = e.item()
             if e == '...':
                 return '...'
             e_float = float(e)
@@ -47,14 +37,22 @@ class tensor:
             if rounded.is_integer():
                 return f"{int(rounded)}."
             else:
-                return "{:.2f}".format(rounded).rstrip('0').rstrip('.') if '.' in "{:.2f}".format(rounded) else "{:.2f}".format(rounded)
+                formatted = "{:.4f}".format(rounded)
+                stripped = formatted.rstrip('0').rstrip('.')
+                return stripped if stripped else formatted
 
         def format_data(data, depth=0):
-            max_rows, max_cols = self.grid_view
+            max_rows, max_cols = (4, 6)  # Truncation settings
+
+            # Convert array-like data to lists
+            if hasattr(data, 'tolist'):
+                data = data.tolist()
+
             if isinstance(data, list):
-                if all(isinstance(row, list) for row in data):
-                    num_rows = len(data)
-                    if depth == 0 and num_rows > max_rows:
+                if all(isinstance(elem, (list, np.ndarray)) for elem in data):
+                    # Handle nested lists (2D+)
+                    num_elements = len(data)
+                    if num_elements > max_rows:
                         half = max_rows // 2
                         head = data[:half]
                         tail = data[-half:]
@@ -62,41 +60,19 @@ class tensor:
                     else:
                         truncated = data
 
-                    formatted_rows = []
-                    for row in truncated:
-                        if row == ['...']:
-                            formatted_rows.append(['...'])
-                            continue
-                        num_cols = len(row)
-                        if num_cols > max_cols:
-                            half_col = max_cols // 2
-                            head_col = row[:half_col]
-                            tail_col = row[-half_col:]
-                            row_truncated = head_col + ['...'] + tail_col
+                    formatted = []
+                    for elem in truncated:
+                        if elem == ['...']:
+                            formatted.append('...')
                         else:
-                            row_truncated = row
-                        formatted_row = [format_element(e) for e in row_truncated]
-                        formatted_rows.append(formatted_row)
+                            formatted_elem = format_data(elem, depth + 1)
+                            formatted.append(formatted_elem)
 
-                    num_cols = max(len(row) for row in formatted_rows) if formatted_rows else 0
-                    col_widths = [0] * num_cols
-                    for row in formatted_rows:
-                        for j in range(len(row)):
-                            col_widths[j] = max(col_widths[j], len(row[j]))
-
-                    padded_rows = []
-                    for row in formatted_rows:
-                        padded = []
-                        for j in range(len(row)):
-                            elem = row[j]
-                            if elem == '...':
-                                padded.append(elem.ljust(col_widths[j]))
-                            else:
-                                padded.append(elem.rjust(col_widths[j]))
-                        padded_row = "[{}]".format(", ".join(padded))
-                        padded_rows.append(padded_row)
-                    return "[{}]".format(",\n        ".join(padded_rows))
+                    indent = ' ' * 4 * (depth + 1)
+                    separator = ",\n" + indent
+                    return f"[{separator.join(formatted)}]"
                 else:
+                    # Handle 1D list
                     num_elements = len(data)
                     if num_elements > max_cols:
                         half = max_cols // 2
@@ -105,37 +81,32 @@ class tensor:
                         truncated = head + ['...'] + tail
                     else:
                         truncated = data
+
                     elements = [format_element(e) for e in truncated]
                     max_width = max(len(e) for e in elements) if elements else 0
-                    padded = [e.rjust(max_width) if e != '...' else e.ljust(max_width) for e in elements]
+                    padded = [
+                        e.rjust(max_width) if e != '...' else e.ljust(max_width)
+                        for e in elements
+                    ]
                     return "[{}]".format(", ".join(padded))
             else:
                 return format_element(data)
 
         data_str = format_data(self.data)
-        _grad_fn = (
-            f", grad_fn=<{self._back.__name__}>" 
-            if self._back.__name__ != "noop" 
-            else ""
-        )
-        _need_grad = f", need_grad={self.need_grad}" if self.need_grad else ""
-        if _need_grad != "" and _grad_fn == "":
-            return f"tensor({data_str}{_need_grad})"
-        return f"tensor({data_str}{_grad_fn})"
-    
+        grad_fn = f", grad_fn=<{self._back.__name__}>" if self._back.__name__ != "noop" else ""
+        need_grad = f", need_grad={self.need_grad}" if self.need_grad else ""
+        
+        parts = [f"array({data_str}"]
+        if grad_fn:
+            parts.append(grad_fn)
+        if need_grad:
+            parts.append(need_grad)
+        parts.append(")")
+        
+        return "".join(parts)
 
-    def backward(self, grad=None):
-        if grad is None:
-            self_data, _ = fix_dim(self.data, 0)
-            if isinstance(self.data, list):
-                if not (len(self_data) == 1 and len(self_data[0]) == 1):
-                    raise RuntimeError("grad can be implicitly created only for scalar outputs. "
-                                    "Use `backward(grad)` to supply the gradient manually.")
-                grad = [[1.0]]
-            else:
-                grad = 1.0
-
-        self.grad = grad.data if isinstance(grad, tensor) else grad
+    def backward(self):
+        self.grad = np.ones_like(self.data) if self.data.shape != (1,) else 1.0
 
         visited = set()
         topo = []
@@ -155,93 +126,153 @@ class tensor:
 
     def __add__(self, other):
         if isinstance(other, (int, float, list)):
-            other = tensor(other)
+            other = array(other)
 
-        added = addition(self.data, other.data)  
-
-        out = tensor(added, (self, other))
+        out = array(self.data + other.data, (self, other), need_grad=True)
 
         def addBackward():
-            self.grad = addition(self.grad, reduce_grad(out.grad, self.shape))  
-            other.grad = addition(other.grad, reduce_grad(out.grad, other.shape))  
+            if self.need_grad:
+                self.grad += unbroadcast(out.grad, self.data.shape)
+
+            if other.need_grad:
+                other.grad += unbroadcast(out.grad, other.data.shape)
 
         out._back = addBackward
         return out
 
-    def __radd__(self, other): 
-        return self.__add__(other)
+    def __radd__(self, other):
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+        return other + self
+
     
+    
+    def __sub__(self, other):
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+
+        out = array(self.data - other.data, (self, other), need_grad=True)
+
+        def subBackward():
+            if self.need_grad:
+                self.grad += unbroadcast(out.grad, self.data.shape)
+
+            if other.need_grad:
+                other.grad += unbroadcast(-out.grad, other.data.shape)
+
+        out._back = subBackward
+        return out
+    
+    def __rsub__(self, other):
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+        return other - self
+
     
     def __mul__(self, other):
         if isinstance(other, (int, float, list)):
-            other = tensor(other)
+            other = array(other)
 
-        multiplied = multiplication(self.data, other.data)  
-
-        out = tensor(multiplied, (self, other))
+        out = array(self.data * other.data, (self, other), need_grad=True)
 
         def mulBackward():
-                
-            grad_out = out.grad
+            if self.need_grad:
+                grad = other.data * out.grad
+                self.grad += unbroadcast(grad, self.data.shape)
 
-            grad_self_matrix = multiplication(other.data, grad_out)  
-
-            if self.shape == ():
-                grad_self = array_sum(grad_self_matrix, axis=None)  
-            else:
-                grad_self = reduce_grad(grad_self_matrix, self.shape)  
-
-            self.grad = addition(self.grad, grad_self)  
-
-            grad_other_matrix = multiplication(self.data, grad_out)  
-
-            if other.shape == ():  # scalar case
-                grad_other = array_sum(grad_other_matrix, axis=None)  
-            else:
-                grad_other = reduce_grad(grad_other_matrix, other.shape)  
-
-            other.grad = addition(other.grad, grad_other)  
-
+            if other.need_grad:
+                grad = self.data * out.grad
+                other.grad += unbroadcast(grad, other.data.shape)
 
         out._back = mulBackward
         return out
+
     
     def __rmul__(self, other):
-        return self.__mul__(other)
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+        return other * self
+
+
+    def __truediv__(self, other):
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+
+        out = array(self.data / other.data, (self, other), need_grad=True)
+
+        def divBackward():
+            if self.need_grad:
+                grad_self = out.grad / other.data
+                self.grad += unbroadcast(grad_self, self.data.shape)
+
+            if other.need_grad:
+                grad_other = -self.data * out.grad / (other.data ** 2)
+                other.grad += unbroadcast(grad_other, other.data.shape)
+
+
+        out._back = divBackward
+        return out
     
+    def __rtruediv__(self, other):
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+        return other / self
     
+
+
+    def __pow__(self, other):
+
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+
+        out = array(self.data ** other.data, (self, other), need_grad=True)
+
+        def powBackward():
+            if self.need_grad:
+                grad_self = other.data * (self.data ** (other.data - 1)) * out.grad
+                self.grad += unbroadcast(grad_self, self.data.shape)
+
+            if other.need_grad:
+                grad_other = out.data * np.log(self.data) * out.grad
+                other.grad += unbroadcast(grad_other, other.data.shape)
+
+        out._back = powBackward
+        return out
+
+    
+    def __rpow__(self, other):
+        if isinstance(other, (int, float, list)):
+            other = array(other)
+        return other ** self
+
+
+
     def __matmul__(self, other):
-        out = tensor(matmul(self.data, other.data), (self, other))  
+        out = array(np.matmul(self.data, other.data), (self, other), need_grad=True)
 
         def matmulBackward():
-            self.grad = addition(self.grad, matmul(out.grad, transpose(other.data)))   
-            other.grad = addition(other.grad, matmul(transpose(self.data), out.grad))  
+            if self.need_grad:
+                self.grad += np.matmul(out.grad, np.swapaxes(other.data, -1, -2))
+            if other.need_grad:
+                other.grad += np.matmul(np.swapaxes(self.data, -1, -2), out.grad)
 
         out._back = matmulBackward
         return out
 
+
+
     @property
     def T(self):
-        out = tensor(transpose(self.data), (self,))  
+        out = array(self.data.T, (self,))  
         return out
 
     def sum(self, axis=None):
-        out = tensor(array_sum(self.data, axis), (self,))  
+        out = array(self.data.sum(), (self,))  
 
         def sumBackward():
-            self.grad = multiplication(out.grad, ones_like_ct(self.data))  
+            if self.need_grad:
+                self.grad += out.grad * np.ones_like(self.data) 
             
         out._back = sumBackward
         return out
-
-
-def ones_like(A):
-    if isinstance(A, tensor):
-        A = A.data
-    return tensor(ones_like_ct(A))  
-
-def zeros_like(A):
-    if isinstance(A, tensor):
-        A = A.data
-    return tensor(zeros_like_ct(A))  
 

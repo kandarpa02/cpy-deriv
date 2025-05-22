@@ -1,49 +1,26 @@
 # cython: boundscheck=False, wraparound=False
 # distutils: language=c++
 
-from  deriv.engine import tensor
-from  deriv.utils.helpers import *
-from  deriv.math.matrix_cpu import *
-from  deriv.math.math_cpu import *
-
-cdef relu_grad(object x):
-    cdef int x_m, x_n, i, j
-    x,_ = fix_dim(x, 0)
-    x_m = len(x)
-    x_n = len(x[0])
-    grad = zeros_like_ct(x)
-    for i in range(x_m):
-        for j in range(len(x[i])):
-            if x[i][j]>0:
-                grad[i][j] += 1
-    out = check_dim(grad)
-    if get_shape(out) == (1,1):
-        return out[0]
-    return out
-
+from deriv.engine import *
+import numpy as np
 
 cdef class ReLU:
     def __init__(self) -> None:
         pass
+
     @staticmethod
     def __call__(object _obj):
         cdef object out
 
-        if not isinstance(_obj, tensor):
-            _obj, _ = fix_dim(_obj, 0)
-            _obj = tensor(_obj)
-
-        elif isinstance(_obj, tensor):
-            _obj.data, _ = fix_dim(_obj.data, 0)
-
-        else:
-            raise ValueError("Object {type(_obj)} is not supported")
-
-        out = tensor(maximum(_obj.data, 0), (_obj,), need_grad=True)
+        if not isinstance(_obj, array):
+            raise ValueError(f"Object of type {type(_obj)} is not supported")
+        
+        out = array(np.maximum(_obj.data, 0), (_obj,), need_grad=True)
 
         def reluBackward():
-            obj_grad = relu_grad(_obj.data)
-            _obj.grad = addition(_obj.grad, multiplication(obj_grad, out.grad))
+            if _obj.need_grad:
+                obj_grad = np.where(_obj.data > 0, 1.0, 0.0)
+                _obj.grad += unbroadcast(obj_grad * out.grad, _obj.data.shape)
 
         out._back = reluBackward
         return out
@@ -52,34 +29,20 @@ cdef class ReLU:
 cdef class Tanh:
     def __init__(self) -> None:
         pass
+
     @staticmethod
     def __call__(object _obj):
         cdef object out
-        if not isinstance(_obj, tensor):
-            _obj, _ = fix_dim(_obj, 0)
-            _obj = tensor(_obj)
 
-        elif isinstance(_obj, tensor):
-            _obj.data, _ = fix_dim(_obj.data, 0)
+        if not isinstance(_obj, array):
+            raise ValueError(f"Object of type {type(_obj)} is not supported")
 
-        else:
-            raise ValueError("Object {type(_obj)} is not supported")
-            
-        out = _obj.apply_fn(tanh_f)
-
-        if get_shape(out.data) == (1,1):
-            out.data = out.data[0][0]
-        else:
-            out.data = check_dim(out.data)
-
-        out.parents = (_obj, )
+        out = array(np.tanh(_obj.data), (_obj,), need_grad=True)
 
         def tanhBackward():
-            def th_grad(x): 
-                return 1 - x**2
-
-            obj_grad = out.apply_fn(th_grad).data
-            _obj.grad = addition(_obj.grad, multiplication(obj_grad, out.grad))
+            if _obj.need_grad:
+                grad_val = 1.0 - np.tanh(_obj.data) ** 2
+                _obj.grad += unbroadcast(grad_val * out.grad, _obj.data.shape)
 
         out._back = tanhBackward
         return out

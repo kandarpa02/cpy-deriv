@@ -3,21 +3,6 @@ from Cython.Build import cythonize
 
 extensions = cythonize([
     Extension(
-        name="deriv.utils.helpers",
-        sources=["deriv/utils/helpers.pyx"],
-        language="c++"
-    ),
-    Extension(
-        name="deriv.math.math_cpu",
-        sources=["deriv/math/math_cpu.pyx"],
-        language="c++"
-    ),
-    Extension(
-        name="deriv.math.matrix_cpu",
-        sources=["deriv/math/matrix_cpu.pyx"],
-        language="c++"
-    ),
-    Extension(
         name="deriv.nn.non_linear",
         sources=["deriv/nn/non_linear.pyx"],
         language="c++"
