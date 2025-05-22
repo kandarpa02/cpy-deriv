@@ -20,25 +20,28 @@ Here's a sample forward and backward pass using Deriv:
 
 The above code computes a composite function:
 
-\[
-\begin{align*}
-z &= xy + x + 2 \\
-h &= \text{ReLU}(z) + x^2 \\
-q &= \tanh(h) + 3y \\
-f &= q^2 + (z - h) + (A \cdot B)
-\end{align*}
-\]
+```
+z = xy + x + 2 
+h = ReLU(z) + x^2 
+q = tanh(h) + 3y
+f = q^2 + (z - h) + (A @ B)
+```
 
 Where:
-- \( x = -3 \), \( y = 1 \)
-- \( A = [2, -1] \), \( B = \begin{bmatrix} 3 \\ 1 \end{bmatrix} \)
+- x = -3
+- y = 1
+- A = [2, -1]
+- B = [[3], [1]]
+
 
 This produces:
-- \( f = 8.0 \)
-- \( \frac{\partial f}{\partial x} = 42.0000 \)
-- \( \frac{\partial f}{\partial y} = -3.0000 \)
-- \( \frac{\partial f}{\partial A} = [3.0, 1.0] \)
-- \( \frac{\partial f}{\partial B} = \begin{bmatrix} 2.0 \\ -1.0 \end{bmatrix} \)
+```
+f = 8.0
+df/dx = 42.0000
+df/dy = -3.0000
+df/dA = [3.0, 1.0]
+df/dB = [[2.0], [-1.0]]
+```
 
 > 🔥 Deriv handles broadcasting, ReLU/Tanh activation, matrix multiplication, and complex chaining — all from scratch.
 
