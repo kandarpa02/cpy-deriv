@@ -26,84 +26,29 @@ class array:
         self.is_scaler = True if self.data.shape == (1,1) else False
     
     def __repr__(self):
-        def format_element(e):
-            # Handle array-like elements (e.g., numpy scalars)
-            if hasattr(e, 'item'):  # Convert numpy scalars to Python floats
-                e = e.item()
-            if e == '...':
-                return '...'
-            e_float = float(e)
-            rounded = round(e_float, 4)
-            if rounded.is_integer():
-                return f"{int(rounded)}."
-            else:
-                formatted = "{:.4f}".format(rounded)
-                stripped = formatted.rstrip('0').rstrip('.')
-                return stripped if stripped else formatted
+        prefix = " " * len("array(")
 
-        def format_data(data, depth=0):
-            max_rows, max_cols = (4, 6)  # Truncation settings
+        arr_str = np.array2string(
+            self.data,
+            precision=4,
+            suppress_small=True,
+            threshold=6,        
+            edgeitems=3,       
+            max_line_width=80, 
+            separator=', ',     
+            prefix=prefix     
+        )
 
-            # Convert array-like data to lists
-            if hasattr(data, 'tolist'):
-                data = data.tolist()
+        extras = []
+        if self._back.__name__ != "noop":
+            extras.append(f"grad_fn=<{self._back.__name__}>")
+        if self.need_grad:
+            extras.append(f"need_grad={self.need_grad!r}")
 
-            if isinstance(data, list):
-                if all(isinstance(elem, (list, np.ndarray)) for elem in data):
-                    # Handle nested lists (2D+)
-                    num_elements = len(data)
-                    if num_elements > max_rows:
-                        half = max_rows // 2
-                        head = data[:half]
-                        tail = data[-half:]
-                        truncated = head + [['...']] + tail
-                    else:
-                        truncated = data
-
-                    formatted = []
-                    for elem in truncated:
-                        if elem == ['...']:
-                            formatted.append('...')
-                        else:
-                            formatted_elem = format_data(elem, depth + 1)
-                            formatted.append(formatted_elem)
-
-                    indent = ' ' * 4 * (depth + 1)
-                    separator = ",\n" + indent
-                    return f"[{separator.join(formatted)}]"
-                else:
-                    # Handle 1D list
-                    num_elements = len(data)
-                    if num_elements > max_cols:
-                        half = max_cols // 2
-                        head = data[:half]
-                        tail = data[-half:]
-                        truncated = head + ['...'] + tail
-                    else:
-                        truncated = data
-
-                    elements = [format_element(e) for e in truncated]
-                    max_width = max(len(e) for e in elements) if elements else 0
-                    padded = [
-                        e.rjust(max_width) if e != '...' else e.ljust(max_width)
-                        for e in elements
-                    ]
-                    return "[{}]".format(", ".join(padded))
-            else:
-                return format_element(data)
-
-        data_str = format_data(self.data)
-        grad_fn = f", grad_fn=<{self._back.__name__}>" if self._back.__name__ != "noop" else ""
-        need_grad = f", need_grad={self.need_grad}" if self.need_grad else ""
-        
-        parts = [f"array({data_str}"]
-        if grad_fn:
-            parts.append(grad_fn)
-        if need_grad:
-            parts.append(need_grad)
-        parts.append(")")
-        
-        return "".join(parts)
+        if extras:
+            return f"array({arr_str}, " + ", ".join(extras) + ")"
+        else:
+            return f"array({arr_str})"
 
     def backward(self):
         self.grad = np.ones_like(self.data) if self.data.shape != (1,) else 1.0
@@ -258,7 +203,6 @@ class array:
 
         out._back = matmulBackward
         return out
-
 
 
     @property
