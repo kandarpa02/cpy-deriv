@@ -1,16 +1,12 @@
-# cython: boundscheck=False, wraparound=False
-# distutils: language=c++
-
 from deriv.Array.array_object import *
 import numpy as np
 
-cdef class ReLU:
+class ReLU:
     def __init__(self) -> None:
         pass
 
     @staticmethod
-    def __call__(object _obj):
-        cdef object out
+    def __call__(_obj):
 
         if not isinstance(_obj, array):
             raise ValueError(f"Object of type {type(_obj)} is not supported")
@@ -26,13 +22,12 @@ cdef class ReLU:
         return out
 
 
-cdef class Tanh:
+class Tanh:
     def __init__(self) -> None:
         pass
 
     @staticmethod
-    def __call__(object _obj):
-        cdef object out
+    def __call__(_obj):
 
         if not isinstance(_obj, array):
             raise ValueError(f"Object of type {type(_obj)} is not supported")

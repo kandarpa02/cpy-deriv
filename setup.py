@@ -1,13 +1,4 @@
-from setuptools import setup, find_packages, Extension
-from Cython.Build import cythonize
-
-extensions = cythonize([
-    Extension(
-        name="deriv.nn.non_linear",
-        sources=["deriv/nn/non_linear.pyx"],
-        language="c++"
-    ),
-])
+from setuptools import setup, find_packages
 
 setup(
     name="deriv",
