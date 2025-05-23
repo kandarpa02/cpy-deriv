@@ -180,6 +180,8 @@ class array:
 
 
     def __matmul__(self, other):
+        if not isinstance(other, array):
+            other = array(other)
         out = array(np.matmul(self.data, other.data), (self, other), need_grad=True)
 
         def matmul_back():

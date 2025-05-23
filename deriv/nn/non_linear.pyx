@@ -1,7 +1,7 @@
 # cython: boundscheck=False, wraparound=False
 # distutils: language=c++
 
-from deriv.engine import *
+from deriv.Array.array_object import *
 import numpy as np
 
 cdef class ReLU:
