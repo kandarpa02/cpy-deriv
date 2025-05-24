@@ -10,12 +10,9 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/kandarpa02/cpy-deriv.git",
     packages=find_packages(),
-    ext_modules=extensions,
     python_requires=">=3.8",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "Programming Language :: Cython",
-        "Programming Language :: C++",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
         "Intended Audience :: Developers",
