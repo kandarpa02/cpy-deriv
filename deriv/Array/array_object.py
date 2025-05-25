@@ -27,6 +27,12 @@ class array:
         self.grid_view:tuple = (5,6)
         self.is_scaler = True if self.data.shape == (1,1) else False
 
+    def __len__(self):
+        return len(self.data)
+    
+    def __getitem__(self, index):
+        return self.data[index]
+
     def backward(self):
         _backward(self)
     
@@ -199,13 +205,42 @@ class array:
         out = array(self.data.T, (self,))  
         return out
 
-    def sum(self, axis=None):
-        out = array(self.data.sum(), (self,))  
+    def sum(self, axis=None, keepdims=False):
+        out = array(self.data.sum(axis=axis, keepdims=keepdims), (self,), need_grad=True)  
 
-        def sum_back():
+        def sumBackward():
             if self.need_grad:
-                self.grad += out.grad * np.ones_like(self.data) 
-            
-        out._back = sum_back
+                grad = out.grad
+                if axis is not None and not keepdims:
+                    shape = list(self.data.shape)
+                    if isinstance(axis, int):
+                        axis_ = [axis]
+                    else:
+                        axis_ = axis
+                    for ax in axis_:
+                        grad = np.expand_dims(grad, ax)
+                self.grad += grad * np.ones_like(self.data)
+
+        out._back = sumBackward
         return out
+
+    
+    def mean(self, axis=None):
+        out = array(self.data.mean(axis=axis), (self,), need_grad=True)  
+
+        def meanBackward():
+            if self.need_grad:
+                shape = self.data.shape
+                if axis is None:
+                    num_elements = np.prod(shape)
+                    grad = np.ones_like(self.data) / num_elements
+                    self.grad += out.grad * grad
+                else:
+                    num_elements = shape[axis]
+                    grad = np.ones_like(self.data) / num_elements
+                    self.grad += out.grad * grad 
+
+        out._back = meanBackward
+        return out
+
 
