@@ -145,6 +145,7 @@ class array:
         out._back = div_back
         return out
     
+
     def __rtruediv__(self, other):
         if isinstance(other, (int, float, list)):
             other = array(other)
@@ -176,8 +177,7 @@ class array:
         if isinstance(other, (int, float, list)):
             other = array(other)
         return other ** self
-
-
+        
 
     def __matmul__(self, other):
         if not isinstance(other, array):
