@@ -63,6 +63,7 @@ for epoch in range(10):
 ```
 <details>
 <summary>📉 Sample Output</summary>
+
 ```
 1.000834
 0.959335
