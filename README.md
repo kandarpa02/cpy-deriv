@@ -24,7 +24,7 @@ pip install git+https://github.com/kandarpa02/PyDeriv.git
 ```
 
 ---
-## 🚀 Minimal Training Example
+## Minimal Training Example
 
 ```python
 import deriv
@@ -50,7 +50,7 @@ opt = SGD(parameters=model.fc1.parameters() | model.fc2.parameters(), lr=0.1)
 x = array([[1.0, 2.0]])
 y = array([[1.0]])
 
-for epoch in range(10):
+for epoch in range(20):
     pred = model(x)
     loss = ((pred - y) ** 2).sum()
 
@@ -65,16 +65,27 @@ for epoch in range(10):
 <summary>📉 Sample Output</summary>
 
 ```
-1.000834
-0.959335
-0.883733
-0.783097
-0.667094
-0.545077
-0.425373
-0.314792
-0.218350
-0.139192
+# loss decreasing
+1.000934
+0.960960
+0.888020
+0.790669
+0.678023
+0.558928
+0.441305
+0.331697
+0.235007
+0.154414
+0.091441
+0.046132
+0.017320
+0.002926
+0.000281
+0.006432
+0.018406
+0.033437
+0.049123
+0.063538
 ```
 </details>
 
