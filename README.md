@@ -20,7 +20,7 @@ deriv is a lightweight automatic differentiation library with a NumPy-like API a
 ## Installation
 
 ```bash
-pip install git+https://github.com/kandarpa02/deriv.git
+pip install git+https://github.com/kandarpa02/py-deriv.git
 ```
 
 ---
