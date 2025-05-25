@@ -1,6 +1,6 @@
-# PyDeriv
+# deriv
 
-PyDeriv is a lightweight automatic differentiation library with a NumPy-like API and a minimal neural network framework. It is designed for clarity, extensibility, and low-level control over training loops and operations.
+deriv is a lightweight automatic differentiation library with a NumPy-like API and a minimal neural network framework. It is designed for clarity, extensibility, and low-level control over training loops and operations.
 
 > This is an early alpha release. APIs may change.
 
@@ -20,7 +20,7 @@ PyDeriv is a lightweight automatic differentiation library with a NumPy-like API
 ## Installation
 
 ```bash
-pip install git+https://github.com/kandarpa02/PyDeriv.git
+pip install git+https://github.com/kandarpa02/deriv.git
 ```
 
 ---
