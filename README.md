@@ -63,6 +63,7 @@ for epoch in range(10):
 ```
 <details>
 <summary>📉 Sample Output</summary>
+```
 1.000834
 0.959335
 0.883733
@@ -73,6 +74,7 @@ for epoch in range(10):
 0.314792
 0.218350
 0.139192
+```
 </details>
 
 ## Autodiff in Action
