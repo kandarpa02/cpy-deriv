@@ -51,7 +51,7 @@ class array:
         """
         _backward(self)
 
-    def graph(self):
+    def graph(self, data=False):
         def print_graph(node, indent="", last=True, visited=None):
             if visited is None:
                 visited = set()
@@ -71,8 +71,12 @@ class array:
 
         def get_node_label(node):
             if node.var_name:
+                if data == False:
+                    return f"{node.var_name}"
                 return f"{node.var_name} ({node.data})"
             elif hasattr(node, 'op'):
+                if data == False:
+                    return f"{node.op}"
                 return f"{node.op} ({node.data})"
             else:
                 return f"val ({node.data})"
