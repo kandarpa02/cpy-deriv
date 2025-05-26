@@ -51,18 +51,32 @@ class array:
         """
         _backward(self)
 
-    def viz(self):
-        show_topo = []
-        if not show_topo:  
-            visited = set()
-            def build_topo(node):
-                if node not in visited:
-                    visited.add(node)
-                    for parent in node.parents:
-                        build_topo(parent)
-                    show_topo.append(node)
-            build_topo(self)
-        return show_topo
+    def graph(self):
+        def print_graph(node, indent="", last=True, visited=None):
+            if visited is None:
+                visited = set()
+                
+            if node in visited:
+                print(indent + ("└── " if last else "├── ") + f"[...]{get_node_label(node)}")
+                return
+            visited.add(node)
+
+            branch = "└── " if last else "├── "
+            print(indent + branch + get_node_label(node))
+
+            indent += "    " if last else "│   "
+            for i, parent in enumerate(node.parents):
+                is_last = (i == len(node.parents) - 1)
+                print_graph(parent, indent, is_last, visited)
+
+        def get_node_label(node):
+            if node.var_name:
+                return f"{node.var_name} ({node.data})"
+            elif hasattr(node, 'op'):
+                return f"{node.op} ({node.data})"
+            else:
+                return f"val ({node.data})"
+        return print_graph(self)
 
     def __repr__(self):
         """
