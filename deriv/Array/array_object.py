@@ -70,6 +70,21 @@ class array:
                 print_graph(parent, indent, is_last, visited)
 
         def get_node_label(node):
+            def get_last_node(self): 
+                topo = []
+                visited = set()
+                def build_topo(node):
+                    if node not in visited:
+                        visited.add(node)
+                        for parent in node.parents:
+                            build_topo(parent)
+                        topo.append(node)
+                build_topo(self)
+                return topo
+            topo = get_last_node(self)
+
+            if node == reversed(topo)[0]:
+                return f"Out {node.data}"
             if node.var_name:
                 if data == False:
                     return f"{node.var_name}"
@@ -80,6 +95,7 @@ class array:
                 return f"{node.op} ({node.data})"
             else:
                 return f"val ({node.data})"
+            
         return print_graph(self)
 
     def __repr__(self):
