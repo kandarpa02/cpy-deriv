@@ -40,7 +40,7 @@ class array:
             pass
         self._back: Callable[[], None] = noop
         self.need_grad = need_grad
-        self.grid_view:tuple = (5,6)
+        self.var_name = var_name
         self.is_scaler = True if self.data.shape == (1,1) else False
 
     def backward(self):
