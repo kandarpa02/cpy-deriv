@@ -80,10 +80,12 @@ class array:
                             build_topo(parent)
                         topo.append(node)
                 build_topo(self)
-                return topo
+                rev_topo = topo.reverse()
+                return rev_topo
+            
             topo = get_last_node(self)
 
-            if node == reversed(topo)[0]:
+            if node == topo[0]:
                 return f"Out {node.data}"
             if node.var_name:
                 if data == False:
