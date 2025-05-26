@@ -85,8 +85,8 @@ class array:
             
             topo = get_last_node(self)
 
-            if node == topo[0]:
-                return f"Out {node.data}"
+            if node == topo[0] and hasattr(node, 'op'):
+                return f"{node.op} ({node.data})"
             if node.var_name:
                 if data == False:
                     return f"{node.var_name}"
@@ -95,6 +95,8 @@ class array:
                 if data == False:
                     return f"{node.op}"
                 return f"{node.op} ({node.data})"
+            elif isinstance(node, (float, int)):
+                return f"(node)"
             else:
                 return f"val ({node.data})"
             

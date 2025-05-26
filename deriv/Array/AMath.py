@@ -34,7 +34,7 @@ class trigo:
         """
         obj = convert(obj)
         radians = np.radians(obj.data) if deg else obj.data
-        out = array(np.sin(radians), (obj,), need_grad=True)
+        out = array(np.sin(radians), (obj,), need_grad=True, op='sin')
 
         def sinBackward():
             if obj.need_grad:
@@ -57,7 +57,7 @@ class trigo:
         """
         obj = convert(obj)
         radians = np.radians(obj.data) if deg else obj.data
-        out = array(np.cos(radians), (obj,), need_grad=True)
+        out = array(np.cos(radians), (obj,), need_grad=True, op='cos')
 
         def cosBackward():
             if obj.need_grad:
@@ -84,7 +84,7 @@ class expo:
             `array`: Result of exp operation with autograd support.
         """
         obj = convert(obj)
-        out = array(np.exp(obj.data), (obj,), need_grad=True)
+        out = array(np.exp(obj.data), (obj,), need_grad=True, op='exp')
 
         def expBackward():
             if obj.need_grad:
@@ -105,7 +105,7 @@ class expo:
             `array`: Result of log operation with autograd support.
         """
         obj = convert(obj)
-        out = array(np.log(obj.data), (obj,), need_grad=True)
+        out = array(np.log(obj.data), (obj,), need_grad=True, op='log')
 
         def logBackward():
             if obj.need_grad:
@@ -126,7 +126,7 @@ class expo:
             `array`: Result of log10 operation with autograd support.
         """
         obj = convert(obj)
-        out = array(np.log10(obj.data), (obj,), need_grad=True)
+        out = array(np.log10(obj.data), (obj,), need_grad=True, op='log10')
 
         def log10Backward():
             if obj.need_grad:
@@ -148,7 +148,7 @@ class expo:
             `array`: Result of root operation with autograd support.
         """
         obj, _pow = convert(obj), convert(1 / _pow)
-        out = array((obj ** _pow).data, (obj, _pow), need_grad=True)
+        out = array((obj ** _pow).data, (obj, _pow), need_grad=True, op='root')
 
         def rootBackward():
             if obj.need_grad:
@@ -181,7 +181,7 @@ class reduct:
         Returns:
             `array`: Result of sum operation with autograd support.
         """
-        out = array(obj.data.sum(axis=axis, keepdims=keepdims), (obj,), need_grad=True)
+        out = array(obj.data.sum(axis=axis, keepdims=keepdims), (obj,), need_grad=True, op='sum')
 
         def sumBackward():
             if obj.need_grad:
@@ -208,7 +208,7 @@ class reduct:
         Returns:
             `array`: Result of mean operation with autograd support.
         """
-        out = array(obj.data.mean(axis=axis), (obj,), need_grad=True)
+        out = array(obj.data.mean(axis=axis), (obj,), need_grad=True, op='mean')
 
         def meanBackward():
             if obj.need_grad:
