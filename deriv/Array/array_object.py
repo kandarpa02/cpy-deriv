@@ -60,7 +60,7 @@ class array:
                     visited.add(node)
                     for parent in node.parents:
                         build_topo(parent)
-                    self.show_topo.append(node)
+                    show_topo.append(node)
             build_topo(self)
         return show_topo
 
