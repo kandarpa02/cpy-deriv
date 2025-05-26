@@ -32,7 +32,7 @@ class ReLU:
         if not isinstance(_obj, array):
             raise ValueError(f"Object of type {type(_obj)} is not supported")
         
-        out = array(np.maximum(_obj.data, 0), (_obj,), need_grad=True)
+        out = array(np.maximum(_obj.data, 0), (_obj,), need_grad=True, op="relu")
 
         def reluBackward():
             if _obj.need_grad:
@@ -74,7 +74,7 @@ class Tanh:
         if not isinstance(_obj, array):
             raise ValueError(f"Object of type {type(_obj)} is not supported")
 
-        out = array(np.tanh(_obj.data), (_obj,), need_grad=True)
+        out = array(np.tanh(_obj.data), (_obj,), need_grad=True, op="tanh")
 
         def tanhBackward():
             if _obj.need_grad:
