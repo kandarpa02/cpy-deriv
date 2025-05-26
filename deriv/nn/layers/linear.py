@@ -16,17 +16,18 @@ class dense(Module):
         __call__(x): Applies the linear transformation to the input tensor.
     """
 
-    def __init__(self, in_features, out_features):
+    def __init__(self, in_features, out_features, var_name=''):
         """
         Initialize the dense layer with given input and output feature sizes.
 
         Args:
             in_features (int): Number of input features.
             out_features (int): Number of output features.
+            var_name (str): Optional, use to see the graph put the name of the variable you used.
         """
         super().__init__()
-        w = array(np.random.randn(in_features, out_features) * 0.1, need_grad=True)
-        b = array(np.zeros(out_features), need_grad=True)
+        w = array(np.random.randn(in_features, out_features) * 0.1, need_grad=True, var_name=f"{var_name}w")
+        b = array(np.zeros(out_features), need_grad=True, var_name=f"{var_name}b")
         self.w = Parameter(w)
         self.b = Parameter(b)
 
