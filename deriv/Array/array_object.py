@@ -29,12 +29,13 @@ class array:
         Whether to track gradients for this array.
     """
     
-    def __init__(self, data, parents=(), need_grad=False):
+    def __init__(self, data, parents=(), op='', need_grad=False, var_name=''):
         self.data = np.array(data) if not isinstance(data, np.ndarray) else data
         self.grad = np.zeros_like(self.data) if isinstance(self.data, list) else 0.0
         self._cached_topo = []
         self.shape = self.data.shape if isinstance(self.data, np.ndarray) else ()
         self.parents = parents
+        self.op = op
         def noop():
             pass
         self._back: Callable[[], None] = noop
@@ -49,6 +50,19 @@ class array:
         Computes the gradient of the array with respect to all `need_grad=True` inputs.
         """
         _backward(self)
+
+    def viz(self):
+        show_topo = []
+        if not show_topo:  
+            visited = set()
+            def build_topo(node):
+                if node not in visited:
+                    visited.add(node)
+                    for parent in node.parents:
+                        build_topo(parent)
+                    self.show_topo.append(node)
+            build_topo(self)
+        return show_topo
 
     def __repr__(self):
         """
@@ -83,7 +97,7 @@ class array:
         """
         if isinstance(other, (int, float, list)):
             other = array(other)
-        out = array(self.data + other.data, (self, other), need_grad=True)
+        out = array(self.data + other.data, (self, other), '+', need_grad=True)
         def add_back():
             if self.need_grad:
                 self.grad += unbroadcast(out.grad, self.data.shape)
@@ -106,7 +120,7 @@ class array:
         """
         if isinstance(other, (int, float, list)):
             other = array(other)
-        out = array(self.data - other.data, (self, other), need_grad=True)
+        out = array(self.data - other.data, (self, other), '-', need_grad=True)
         def sub_back():
             if self.need_grad:
                 self.grad += unbroadcast(out.grad, self.data.shape)
@@ -129,7 +143,7 @@ class array:
         """
         if isinstance(other, (int, float, list)):
             other = array(other)
-        out = array(self.data * other.data, (self, other), need_grad=True)
+        out = array(self.data * other.data, (self, other), '*', need_grad=True)
         def mul_back():
             if self.need_grad:
                 grad = other.data * out.grad
@@ -154,7 +168,7 @@ class array:
         """
         if isinstance(other, (int, float, list)):
             other = array(other)
-        out = array(self.data / other.data, (self, other), need_grad=True)
+        out = array(self.data / other.data, (self, other), '/', need_grad=True)
         def div_back():
             if self.need_grad:
                 grad_self = out.grad / other.data
@@ -179,7 +193,7 @@ class array:
         """
         if isinstance(other, (int, float, list)):
             other = array(other)
-        out = array(self.data ** other.data, (self, other), need_grad=True)
+        out = array(self.data ** other.data, (self, other), '**', need_grad=True)
         def pow_back():
             if self.need_grad:
                 grad_self = other.data * (self.data ** (other.data - 1)) * out.grad
@@ -204,7 +218,7 @@ class array:
         """
         if not isinstance(other, array):
             other = array(other)
-        out = array(np.matmul(self.data, other.data), (self, other), need_grad=True)
+        out = array(np.matmul(self.data, other.data), (self, other), '@', need_grad=True)
         def matmul_back():
             if self.need_grad:
                 self.grad += np.matmul(out.grad, np.swapaxes(other.data, -1, -2))
@@ -220,7 +234,7 @@ class array:
 
         Returns the transpose of the array.
         """
-        out = array(self.data.T, (self,))  
+        out = array(self.data.T, (self,), op='T')  
         return out
 
     def sum(self, axis=None, keepdims=False):
@@ -236,7 +250,7 @@ class array:
         keepdims : bool, optional
             If True, retains reduced dimensions with size one.
         """
-        out = array(self.data.sum(axis=axis, keepdims=keepdims), (self,), need_grad=True)  
+        out = array(self.data.sum(axis=axis, keepdims=keepdims), (self,), 'sum', need_grad=True)  
         def sumBackward():
             if self.need_grad:
                 grad = out.grad
@@ -263,7 +277,7 @@ class array:
         axis : None or int, optional
             Axis or axes along which the mean is computed.
         """
-        out = array(self.data.mean(axis=axis), (self,), need_grad=True)  
+        out = array(self.data.mean(axis=axis), (self,), 'mean', need_grad=True)  
         def meanBackward():
             if self.need_grad:
                 shape = self.data.shape
