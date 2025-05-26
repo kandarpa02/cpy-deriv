@@ -80,8 +80,8 @@ class array:
                             build_topo(parent)
                         topo.append(node)
                 build_topo(self)
-                rev_topo = topo.reverse()
-                return rev_topo
+                topo.reverse()
+                return topo
             
             topo = get_last_node(self)
 
