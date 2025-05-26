@@ -61,13 +61,11 @@ for epoch in range(20):
     print(f"{loss.data:.6f}")
 
 ```
+Now let us visualize the computation graph:
 
 ```python
-# you can visualize the graph 
 loss.graph()
 ```
-<details>
-
 ```bash
 └── sum (0.1133774969574077)
     └── ** ([[0.1133775]])
@@ -89,7 +87,6 @@ loss.graph()
         │   └──  ([[1.]])
         └──  (2)
 ```
-</details>
 
 <details>
 <summary>Sample Output</summary>
