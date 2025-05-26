@@ -84,6 +84,8 @@ class array:
             extras.append(f"grad_fn=<{self._back.__name__}>")
         if self.need_grad:
             extras.append(f"need_grad={self.need_grad!r}")
+        if self.var_name != '':
+            extras.append(f"variable={self.var_name}")
         if extras:
             return f"array({arr_str}, " + ", ".join(extras) + ")"
         else:
