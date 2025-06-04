@@ -153,5 +153,3 @@ df/dB = [[2.0], [-1.0]]
 ## Disclaimer
 
 Still under heavy development. Expect breaking changes. For now it only works on CPU.
-
-its a test
