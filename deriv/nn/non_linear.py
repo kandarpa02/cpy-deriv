@@ -1,4 +1,4 @@
-from deriv.Array.array_object import *
+from deriv import array, unbroadcast
 import numpy as np
 
 class ReLU:
