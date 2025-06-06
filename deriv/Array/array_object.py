@@ -51,6 +51,18 @@ class array:
         """
         _backward(self)
 
+    def topo(self):
+        if not self._cached_topo:  
+            visited = set()
+            def build_topo(node):
+                if node not in visited:
+                    visited.add(node)
+                    for parent in node.parents:
+                        build_topo(parent)
+                    self._cached_topo.append(node)
+            build_topo(self)
+        return self._cached_topo
+
     def graph(self, data=False):
         def print_graph(node, indent="", last=True, visited=None):
             if visited is None:

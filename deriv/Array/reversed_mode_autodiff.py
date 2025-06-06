@@ -16,4 +16,3 @@ def _backward(self):
         for node in reversed(self._cached_topo):
             node._back()
 
-
