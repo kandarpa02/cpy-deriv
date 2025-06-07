@@ -389,3 +389,6 @@ class array:
     def __hash__(self):
         """Object hash based on id."""
         return id(self)
+    
+    def __neg__(self):
+        return array(-self.data)
