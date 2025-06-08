@@ -15,7 +15,7 @@ class AdaLU:
         w = np.clip(self.w_init.data, 0.0001, None)
         b = np.clip(self.b_init.data, 0.0001, None)
 
-        pos = tanh(x)
+        pos = tanh(x) * self.a_init
         neg = self.a_init * deriv.sin(x * w) / b
 
         return deriv.where(x>array(0), pos, neg)
