@@ -67,7 +67,7 @@ class Module:
         params = {}
         for name, param in self._parameters.items():
             full_name = f"{prefix}.{name}" if prefix else name
-            params[full_name] = param.data
+            params[full_name] = param.data.data
         for name, module in self._modules.items():
             subprefix = f"{prefix}.{name}" if prefix else name
             params.update(module.parameters(prefix=subprefix))
