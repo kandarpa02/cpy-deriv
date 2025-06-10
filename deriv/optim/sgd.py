@@ -50,5 +50,5 @@ class SGD:
         This should be called before backpropagating the next batch.
         """
         for param in self.parameters.values():
-            param.grad.fill(0)
-
+            if param.grad is not None:
+                param.grad.fill(0)
