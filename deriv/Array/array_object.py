@@ -33,7 +33,7 @@ class array:
     def __init__(self, data, parents=(), op='', need_grad=False, var_name=''):
         self.xp = get_backend()
         self.data = self.xp.array(data) if not isinstance(data, self.xp.ndarray) else data
-        self.grad = self.xp.zeros_like(self.data) if isinstance(self.data, list) else 0.0
+        self.grad = self.xp.zeros_like(self.data) if isinstance(self.data, list) else self.xp.array(0)
         self._cached_topo = []
         self.shape = self.data.shape if isinstance(self.data, self.xp.ndarray) else ()
         self.parents = parents
