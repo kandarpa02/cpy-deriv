@@ -40,6 +40,10 @@ class SGD:
             v = self.velocities[name]
             grad = param.grad
 
+            if grad is None:
+                print(f"[WARN] No gradient for {name} — skipping update")
+                continue
+
             v[:] = self.beta * v + (1 - self.beta) * grad 
             param.data[:] -= self.lr * v 
 
