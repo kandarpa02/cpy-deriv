@@ -49,7 +49,7 @@ class Module:
             value (Any): Value to set. If it is a `Parameter` or `Module`, it will be registered.
         """
         if isinstance(value, Parameter):
-            self._parameters[name] = value
+            self._parameters[name] = value.data
         elif isinstance(value, Module):
             self._modules[name] = value
         super().__setattr__(name, value)
@@ -67,7 +67,7 @@ class Module:
         params = {}
         for name, param in self._parameters.items():
             full_name = f"{prefix}.{name}" if prefix else name
-            params[full_name] = param.data.data
+            params[full_name] = param
         for name, module in self._modules.items():
             subprefix = f"{prefix}.{name}" if prefix else name
             params.update(module.parameters(prefix=subprefix))
