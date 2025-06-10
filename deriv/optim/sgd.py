@@ -26,7 +26,7 @@ class SGD:
     def step(self):
         """Perform a single optimization step"""
         for name, param in self.parameters.items():
-            arr = param.data
+            arr = param
             
             if arr.grad is None:
                 print(f"[WARN] No gradient for {name} — skipping update")
