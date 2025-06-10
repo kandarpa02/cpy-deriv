@@ -47,7 +47,7 @@ class array:
 
     @property
     def dtype(self):
-        return type(self)
+        return type(self.data)
 
     def backward(self):
         """
