@@ -45,9 +45,6 @@ class array:
         self.var_name = var_name
         self.is_scaler = True if self.data.shape == (1,1) else False
 
-    @property
-    def dtype(self):
-        return type(self.data)
 
     def backward(self):
         """
