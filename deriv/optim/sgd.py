@@ -44,6 +44,6 @@ class SGD:
     def zero_grad(self):
         """Reset all parameter gradients to zero"""
         for param in self.parameters.values():
-            arr = param.data
+            arr = param
             if arr.grad is not None:
                 arr.grad.fill(0)
