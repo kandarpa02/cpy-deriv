@@ -1,4 +1,4 @@
-import numpy as np
+from deriv.Array.backend import get_backend
 from deriv.Array.array_object import array
 from deriv.nn.module import Parameter, Module
 
@@ -17,6 +17,7 @@ class dense(Module):
     """
 
     def __init__(self, in_features, out_features, var_name=''):
+        xp = get_backend()
         """
         Initialize the dense layer with given input and output feature sizes.
 
@@ -26,8 +27,8 @@ class dense(Module):
             var_name (str): Optional, use to see the graph put the name of the variable you used.
         """
         super().__init__()
-        w = array(np.random.randn(in_features, out_features) * 0.1, need_grad=True, var_name=f"{var_name}w")
-        b = array(np.zeros(out_features), need_grad=True, var_name=f"{var_name}b")
+        w = array(xp.random.randn(in_features, out_features) * 0.1, need_grad=True, var_name=f"{var_name}w")
+        b = array(xp.zeros(out_features), need_grad=True, var_name=f"{var_name}b")
         self.w = Parameter(w)
         self.b = Parameter(b)
 

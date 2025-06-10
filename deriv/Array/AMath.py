@@ -1,5 +1,6 @@
 from deriv.Array.array_object import array, unbroadcast
-import numpy as np
+from deriv.Array.backend import get_backend
+
 
 def convert(data):
     """
@@ -22,6 +23,7 @@ class trigo:
 
     @staticmethod
     def sin(obj, deg):
+        xp = get_backend()
         """
         Compute the sine of the input.
 
@@ -33,18 +35,19 @@ class trigo:
             `array`: Result of sin operation with autograd support.
         """
         obj = convert(obj)
-        radians = np.radians(obj.data) if deg else obj.data
-        out = array(np.sin(radians), (obj,), need_grad=True, op='sin')
+        radians = xp.radians(obj.data) if deg else obj.data
+        out = array(xp.sin(radians), (obj,), need_grad=True, op='sin')
 
         def sinBackward():
             if obj.need_grad:
-                obj.grad += out.grad * np.cos(radians)
+                obj.grad += out.grad * xp.cos(radians)
 
         out._back = sinBackward
         return out
 
     @staticmethod
     def cos(obj, deg):
+        xp = get_backend()
         """
         Compute the cosine of the input.
 
@@ -56,12 +59,12 @@ class trigo:
             `array`: Result of cos operation with autograd support.
         """
         obj = convert(obj)
-        radians = np.radians(obj.data) if deg else obj.data
-        out = array(np.cos(radians), (obj,), need_grad=True, op='cos')
+        radians = xp.radians(obj.data) if deg else obj.data
+        out = array(xp.cos(radians), (obj,), need_grad=True, op='cos')
 
         def cosBackward():
             if obj.need_grad:
-                obj.grad += out.grad * -np.sin(radians)
+                obj.grad += out.grad * -xp.sin(radians)
 
         out._back = cosBackward
         return out
@@ -74,6 +77,7 @@ class expo:
 
     @staticmethod
     def exp(obj):
+        xp = get_backend()
         """
         Compute the exponential of the input.
 
@@ -84,7 +88,7 @@ class expo:
             `array`: Result of exp operation with autograd support.
         """
         obj = convert(obj)
-        out = array(np.exp(obj.data), (obj,), need_grad=True, op='exp')
+        out = array(xp.exp(obj.data), (obj,), need_grad=True, op='exp')
 
         def expBackward():
             if obj.need_grad:
@@ -95,6 +99,7 @@ class expo:
 
     @staticmethod
     def log(obj):
+        xp = get_backend()
         """
         Compute the natural logarithm of the input.
 
@@ -105,7 +110,7 @@ class expo:
             `array`: Result of log operation with autograd support.
         """
         obj = convert(obj)
-        out = array(np.log(obj.data), (obj,), need_grad=True, op='log')
+        out = array(xp.log(obj.data), (obj,), need_grad=True, op='log')
 
         def logBackward():
             if obj.need_grad:
@@ -116,6 +121,7 @@ class expo:
 
     @staticmethod
     def log10(obj):
+        xp = get_backend()
         """
         Compute the base-10 logarithm of the input.
 
@@ -126,17 +132,18 @@ class expo:
             `array`: Result of log10 operation with autograd support.
         """
         obj = convert(obj)
-        out = array(np.log10(obj.data), (obj,), need_grad=True, op='log10')
+        out = array(xp.log10(obj.data), (obj,), need_grad=True, op='log10')
 
         def log10Backward():
             if obj.need_grad:
-                obj.grad += out.grad * (1 / obj.data) * np.log10(np.exp(1))
+                obj.grad += out.grad * (1 / obj.data) * xp.log10(xp.exp(1))
 
         out._back = log10Backward
         return out
 
     @staticmethod
     def rootof(obj, _pow):
+        xp = get_backend()
         """
         Compute the nth root of an input as `obj^(1/_pow)`.
 
@@ -156,7 +163,7 @@ class expo:
                 obj.grad += unbroadcast(grad_obj, obj.data.shape)
 
             if _pow.need_grad:
-                grad_pow = out.data * np.log(obj.data) * out.grad
+                grad_pow = out.data * xp.log(obj.data) * out.grad
                 _pow.grad += unbroadcast(grad_pow, _pow.data.shape)
 
         out._back = rootBackward
@@ -170,6 +177,7 @@ class reduct:
 
     @staticmethod
     def sum(obj, axis=None, keepdims=False):
+        xp = get_backend()
         """
         Compute the sum along specified axis.
 
@@ -190,14 +198,15 @@ class reduct:
                     shape = list(obj.data.shape)
                     axis_ = [axis] if isinstance(axis, int) else axis
                     for ax in axis_:
-                        grad = np.expand_dims(grad, ax)
-                obj.grad += grad * np.ones_like(obj.data)
+                        grad = xp.expand_dims(grad, ax)
+                obj.grad += grad * xp.ones_like(obj.data)
 
         out._back = sumBackward
         return out
 
     @staticmethod
     def mean(obj, axis=None):
+        xp = get_backend()
         """
         Compute the mean along specified axis.
 
@@ -214,12 +223,12 @@ class reduct:
             if obj.need_grad:
                 shape = obj.data.shape
                 if axis is None:
-                    num_elements = np.prod(shape)
-                    grad = np.ones_like(obj.data) / num_elements
+                    num_elements = xp.prod(shape)
+                    grad = xp.ones_like(obj.data) / num_elements
                     obj.grad += out.grad * grad
                 else:
                     num_elements = shape[axis]
-                    grad = np.ones_like(obj.data) / num_elements
+                    grad = xp.ones_like(obj.data) / num_elements
                     obj.grad += out.grad * grad
 
         out._back = meanBackward
@@ -227,6 +236,7 @@ class reduct:
 
     @staticmethod
     def prod(obj):
+        xp = get_backend()
         """
         Placeholder for product reduction function.
 

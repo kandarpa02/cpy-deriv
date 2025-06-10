@@ -1,5 +1,6 @@
 from deriv import array, unbroadcast
-import numpy as np
+from deriv.Array.backend import get_backend
+
 
 class ReLU:
     """
@@ -17,6 +18,7 @@ class ReLU:
 
     @staticmethod
     def __call__(_obj):
+        xp = get_backend()
         """
         Apply the ReLU activation function to the input array.
 
@@ -32,11 +34,11 @@ class ReLU:
         if not isinstance(_obj, array):
             raise ValueError(f"Object of type {type(_obj)} is not supported")
         
-        out = array(np.maximum(_obj.data, 0), (_obj,), need_grad=True, op="relu")
+        out = array(xp.maximum(_obj.data, 0), (_obj,), need_grad=True, op="relu")
 
         def reluBackward():
             if _obj.need_grad:
-                obj_grad = np.where(_obj.data > 0, 1.0, 0.0)
+                obj_grad = xp.where(_obj.data > 0, 1.0, 0.0)
                 _obj.grad += unbroadcast(obj_grad * out.grad, _obj.data.shape)
 
         out._back = reluBackward
@@ -59,6 +61,7 @@ class Tanh:
 
     @staticmethod
     def __call__(_obj):
+        xp = get_backend()
         """
         Apply the Tanh activation function to the input array.
 
@@ -74,11 +77,11 @@ class Tanh:
         if not isinstance(_obj, array):
             raise ValueError(f"Object of type {type(_obj)} is not supported")
 
-        out = array(np.tanh(_obj.data), (_obj,), need_grad=True, op="tanh")
+        out = array(xp.tanh(_obj.data), (_obj,), need_grad=True, op="tanh")
 
         def tanhBackward():
             if _obj.need_grad:
-                grad_val = 1.0 - np.tanh(_obj.data) ** 2
+                grad_val = 1.0 - xp.tanh(_obj.data) ** 2
                 _obj.grad += unbroadcast(grad_val * out.grad, _obj.data.shape)
 
         out._back = tanhBackward

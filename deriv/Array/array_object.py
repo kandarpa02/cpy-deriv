@@ -1,6 +1,7 @@
-import numpy as np
 from typing import Callable
 from deriv.Array.reversed_mode_autodiff import _backward
+from deriv.Array.backend import get_backend
+
 
 def unbroadcast(grad, target_shape):
     """Reduces gradient to the original broadcasted shape."""
@@ -30,10 +31,11 @@ class array:
     """
     
     def __init__(self, data, parents=(), op='', need_grad=False, var_name=''):
-        self.data = np.array(data) if not isinstance(data, np.ndarray) else data
-        self.grad = np.zeros_like(self.data) if isinstance(self.data, list) else 0.0
+        self.xp = get_backend()
+        self.data = self.xp.array(data) if not isinstance(data, self.xp.ndarray) else data
+        self.grad = self.xp.zeros_like(self.data) if isinstance(self.data, list) else 0.0
         self._cached_topo = []
-        self.shape = self.data.shape if isinstance(self.data, np.ndarray) else ()
+        self.shape = self.data.shape if isinstance(self.data, self.xp.ndarray) else ()
         self.parents = parents
         self.op = op
         def noop():
@@ -119,7 +121,7 @@ class array:
         String representation of the deriv.array object.
         """
         prefix = " " * len("array(")
-        arr_str = np.array2string(
+        arr_str = self.xp.array2string(
             self.data,
             precision=4,
             suppress_small=True,
@@ -251,7 +253,7 @@ class array:
                 grad_self = other.data * (self.data ** (other.data - 1)) * out.grad
                 self.grad += unbroadcast(grad_self, self.data.shape)
             if other.need_grad:
-                grad_other = out.data * np.log(self.data) * out.grad
+                grad_other = out.data * self.xp.log(self.data) * out.grad
                 other.grad += unbroadcast(grad_other, other.data.shape)
         out._back = pow_back
         return out
@@ -270,12 +272,12 @@ class array:
         """
         if not isinstance(other, array):
             other = array(other)
-        out = array(np.matmul(self.data, other.data), (self, other), '@', need_grad=True)
+        out = array(self.xp.matmul(self.data, other.data), (self, other), '@', need_grad=True)
         def matmul_back():
             if self.need_grad:
-                self.grad += np.matmul(out.grad, np.swapaxes(other.data, -1, -2))
+                self.grad += self.xp.matmul(out.grad, self.xp.swapaxes(other.data, -1, -2))
             if other.need_grad:
-                other.grad += np.matmul(np.swapaxes(self.data, -1, -2), out.grad)
+                other.grad += self.xp.matmul(self.xp.swapaxes(self.data, -1, -2), out.grad)
         out._back = matmul_back
         return out
 
@@ -313,8 +315,8 @@ class array:
                     else:
                         axis_ = axis
                     for ax in axis_:
-                        grad = np.expand_dims(grad, ax)
-                self.grad += grad * np.ones_like(self.data)
+                        grad = self.xp.expand_dims(grad, ax)
+                self.grad += grad * self.xp.ones_like(self.data)
         out._back = sumBackward
         return out
 
@@ -334,12 +336,12 @@ class array:
             if self.need_grad:
                 shape = self.data.shape
                 if axis is None:
-                    num_elements = np.prod(shape)
-                    grad = np.ones_like(self.data) / num_elements
+                    num_elements = self.xp.prod(shape)
+                    grad = self.xp.ones_like(self.data) / num_elements
                     self.grad += out.grad * grad
                 else:
                     num_elements = shape[axis]
-                    grad = np.ones_like(self.data) / num_elements
+                    grad = self.xp.ones_like(self.data) / num_elements
                     self.grad += out.grad * grad 
         out._back = meanBackward
         return out
@@ -392,3 +394,19 @@ class array:
     
     def __neg__(self):
         return array(-self.data)
+
+    def to(self, device: str):
+        if device == 'cpu':
+            import numpy as np
+            if self.data.__class__.__module__.startswith('cupy'):
+                import cupy as cp
+                self.data =  cp.asnumpy(self.data)
+            self.device = 'cpu'
+        elif device == 'cuda':
+            import cupy as cp
+            if self.data.__class__.__module__.startswith('numpy'):
+                self.data = cp.asarray(self.data)
+            self.device = 'cuda'
+        else:
+            raise ValueError("Device must be 'cpu' or 'cuda'")
+        return self  # enable chaining
