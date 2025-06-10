@@ -348,6 +348,7 @@ class array:
     
     def max(self, axis=None, keepdims=False):
         out = array(self.data.max(axis=axis, keepdims=keepdims), (self,), 'max', need_grad=True)
+        return out
         
 
     def __len__(self):
