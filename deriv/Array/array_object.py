@@ -345,6 +345,10 @@ class array:
                     self.grad += out.grad * grad 
         out._back = meanBackward
         return out
+    
+    def max(self, axis=None, keepdims=False):
+        out = array(self.data.max(axis=axis, keepdims=keepdims), (self,), 'max', need_grad=True)
+        
 
     def __len__(self):
         """Returns the number of elements along the first axis."""
