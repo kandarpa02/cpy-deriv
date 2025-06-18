@@ -1,6 +1,8 @@
 # deriv
 
-deriv is a lightweight automatic differentiation library with a NumPy-like API and a minimal neural network framework. It is designed for clarity, extensibility, and low-level control over training loops and operations.
+![sin(x) vs sin'(x)](assets/Differentiation_of_sine.gif)
+
+deriv is a lightweight automatic differentiation library with a **PyTorch**-like API and a minimal neural network framework. It is designed for clarity, extensibility, and low-level control over training loops and operations.
 
 > This is an early alpha release. APIs may change.
 
@@ -8,7 +10,9 @@ deriv is a lightweight automatic differentiation library with a NumPy-like API a
 ## Features
 - Reverse-mode autodiff from scratch
 
-- NumPy-like API and syntax
+- PyTorch-like API and syntax
+
+- Both CPU and GPU(experimental for now) support via NumPy and CuPy
 
 - Basic neural layers: Dense, ReLU, Tanh
 
