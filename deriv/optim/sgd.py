@@ -1,49 +1,21 @@
 from deriv.Array.backend import get_backend
+from deriv.optim._internals._csgd import sgd_step
 
 class SGD:
-    """
-    Fixed SGD optimizer that works with deriv.array and Parameter objects
-    """
-    
     def __init__(self, parameters, lr=1e-3, beta=0.9):
-        """
-        Initialize SGD optimizer
-        
-        Args:
-            parameters (dict): Dictionary of Parameter objects
-            lr (float): Learning rate
-            beta (float): Momentum coefficient
-        """
         self.xp = get_backend()
         self.parameters = parameters
         self.lr = lr
         self.beta = beta
-        
-        self.velocities = {}
-        for name, param in parameters.items():
-            self.velocities[name] = self.xp.zeros_like(param.data.data)
+        self.velocities = {
+            name: self.xp.zeros_like(param.data.data)
+            for name, param in parameters.items()
+        }
 
     def step(self):
-        """Perform a single optimization step"""
-        for name, param in self.parameters.items():
-            arr = param
-            
-            if arr.grad is None:
-                print(f"[WARN] No gradient for {name} — skipping update")
-                continue
-                
-            v = self.velocities[name]
-            
-            grad = arr.grad
-            
-            v[:] = self.beta * v + (1 - self.beta) * grad
-            
-            # Update parameter data: w = w - lr*v
-            arr.data[:] -= self.lr * v
+        sgd_step(self.parameters, self.velocities, self.lr, self.beta, self.xp)
 
     def zero_grad(self):
-        """Reset all parameter gradients to zero"""
         for param in self.parameters.values():
-            arr = param
-            if arr.grad is not None:
-                arr.grad.fill(0)
+            if param.grad is not None:
+                param.grad.fill(0)

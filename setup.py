@@ -1,4 +1,14 @@
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
+from Cython.Build import cythonize
+import os
+
+ext_modules = cythonize([
+    Extension(
+        name="deriv.optim._internals._csgd.sgd_step",
+        sources=["deriv/optim/_internals/_csgd/sgd_step.pyx"],
+        language="c++"
+    )
+])
 
 setup(
     name="deriv",
@@ -10,6 +20,8 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/kandarpa02/cpy-deriv.git",
     packages=find_packages(),
+    ext_modules=ext_modules,
+    setup_requires=["cython"],
     python_requires=">=3.8",
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -21,5 +33,4 @@ setup(
     ],
     license="Apache-2.0",
     zip_safe=False,
-    
 )
