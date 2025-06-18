@@ -1,8 +1,8 @@
 # deriv
 
-![sin(x) vs sin'(x)](assets/Differentiation_of_sine.gif)
+![Levi](assets/m2-res_590p.gif)
 
-deriv is a lightweight automatic differentiation library with a **PyTorch**-like API and a minimal neural network framework. It is designed for clarity, extensibility, and low-level control over training loops and operations.
+deriv is a lightweight automatic differentiation library with a **PyTorch**-like API and a minimal neural network framework. It is designed for clarity, extensibility, and low-level control over training loops and operations. **Able to slice through almost any function’s gradients like Levi through Titan napes 💀**
 
 > This is an early alpha release. APIs may change.
 
