@@ -4,8 +4,8 @@ import os
 
 ext_modules = cythonize([
     Extension(
-        name="deriv.optim._internals._csgd.sgd_step",
-        sources=["deriv/optim/_internals/_csgd/sgd_step.pyx"],
+        name="deriv.optim._internals._csgd",
+        sources=["deriv/optim/_internals/_csgd.pyx"],
         language="c++"
     )
 ])
