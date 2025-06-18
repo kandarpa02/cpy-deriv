@@ -1,5 +1,4 @@
-from deriv import array
-from deriv import exp, log, sum as dsum, mean
+from deriv import array, exp, log, sum as dsum, mean
 from deriv.Array.backend import get_backend
 
 class SoftmaxCrossEntropy:
@@ -8,12 +7,23 @@ class SoftmaxCrossEntropy:
 
     def __call__(self, logits: 'array', targets: 'array') -> 'array':
         xp = get_backend()
-        shift = logits.max(axis=self.axis, keepdims=True)
-        stable_logits = logits - shift
+        axis = self.axis
+        batch_size = logits.shape[0]
 
+        shift = logits.max(axis=axis, keepdims=True)
+        stable_logits = logits - shift
         exps = exp(stable_logits)
-        softmax = exps / dsum(exps, axis=self.axis, keepdims=True)
+        sum_exps = dsum(exps, axis=axis, keepdims=True)
+        softmax = exps / sum_exps
 
         log_softmax = log(softmax + 1e-9)
-        ce = dsum(targets * log_softmax, axis=self.axis)
-        return -mean(ce)
+        ce_loss = -(targets * log_softmax).sum(axis=axis)
+        loss = mean(ce_loss)
+
+        def CCEBackward():
+            grad_logits = (softmax.data - targets.data) / batch_size
+            logits.grad += grad_logits * loss.grad
+
+        loss._back = CCEBackward
+
+        return loss
