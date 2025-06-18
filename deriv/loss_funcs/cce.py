@@ -19,11 +19,11 @@ class SoftmaxCrossEntropy:
         log_softmax = log(softmax + 1e-9)
         ce_loss = -(targets * log_softmax).sum(axis=axis)
         loss = mean(ce_loss)
-
+        loss.parents = (logits,)
+        
         def CCEBackward():
             grad_logits = (softmax.data - targets.data) / batch_size
             logits.grad += grad_logits * loss.grad
-
         loss._back = CCEBackward
 
         return loss
