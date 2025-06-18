@@ -260,8 +260,8 @@ def exp(x): return e.exp(x)
 def log(x): return e.log(x)
 def log10(x): return e.log10(x)
 def rootof(x, y): return e.rootof(x, y)
-def mean(x): return r.mean(x)
-def sum(x): return r.sum(x)
+def mean(x, axis=None): return r.mean(x, axis=axis)
+def sum(x, axis=None, keepdims=False): return r.sum(x, axis=axis, keepdims=keepdims)
 def prod(x): return r.prod(x)
 
 __all__ = ['sin', 'cos', 'exp', 'log', 'log10', 'rootof', 'mean', 'sum', 'prod']
