@@ -1,7 +1,6 @@
 from typing import Callable
 from deriv.Array.reversed_mode_autodiff import _backward
 from deriv.Array.backend import get_backend
-from deriv.Array.globals import GRAD_MODE
 
 def unbroadcast(grad, target_shape):
     """Reduces gradient to the original broadcasted shape."""
@@ -13,11 +12,6 @@ def unbroadcast(grad, target_shape):
             grad = grad.sum(axis=i, keepdims=True)
 
     return grad
-
-def regulate_parent(self):
-    if GRAD_MODE == False:
-        self.parents = ()
-    return self.parents
 
 class array:
     """
@@ -34,7 +28,7 @@ class array:
     need_grad : bool, optional
         Whether to track gradients for this array.
     """
-
+    
     def __init__(self, data, parents=(), op='', need_grad=False, var_name=''):
         self.xp = get_backend()
         self.data = self.xp.array(data) if not isinstance(data, self.xp.ndarray) else data
@@ -158,8 +152,6 @@ class array:
         if isinstance(other, (int, float, list)):
             other = array(other)
         out = array(self.data + other.data, (self, other), '+', need_grad=True)
-        out.parents = regulate_parent(out)
-
         def add_back():
             if self.need_grad:
                 self.grad += unbroadcast(out.grad, self.data.shape)
@@ -183,8 +175,6 @@ class array:
         if isinstance(other, (int, float, list)):
             other = array(other)
         out = array(self.data - other.data, (self, other), '-', need_grad=True)
-        out.parents = regulate_parent(out)
-
         def sub_back():
             if self.need_grad:
                 self.grad += unbroadcast(out.grad, self.data.shape)
@@ -208,8 +198,6 @@ class array:
         if isinstance(other, (int, float, list)):
             other = array(other)
         out = array(self.data * other.data, (self, other), '*', need_grad=True)
-        out.parents = regulate_parent(out)
-
         def mul_back():
             if self.need_grad:
                 grad = other.data * out.grad
@@ -235,8 +223,6 @@ class array:
         if isinstance(other, (int, float, list)):
             other = array(other)
         out = array(self.data / other.data, (self, other), '/', need_grad=True)
-        out.parents = regulate_parent(out)
-
         def div_back():
             if self.need_grad:
                 grad_self = out.grad / other.data
@@ -262,8 +248,6 @@ class array:
         if isinstance(other, (int, float, list)):
             other = array(other)
         out = array(self.data ** other.data, (self, other), '**', need_grad=True)
-        out.parents = regulate_parent(out)
-
         def pow_back():
             if self.need_grad:
                 grad_self = other.data * (self.data ** (other.data - 1)) * out.grad
@@ -289,8 +273,6 @@ class array:
         if not isinstance(other, array):
             other = array(other)
         out = array(self.xp.matmul(self.data, other.data), (self, other), '@', need_grad=True)
-        out.parents = regulate_parent(out)
-
         def matmul_back():
             if self.need_grad:
                 self.grad += self.xp.matmul(out.grad, self.xp.swapaxes(other.data, -1, -2))
@@ -322,9 +304,7 @@ class array:
         keepdims : bool, optional
             If True, retains reduced dimensions with size one.
         """
-        out = array(self.data.sum(axis=axis, keepdims=keepdims), (self,), 'sum', need_grad=True)
-        out.parents = regulate_parent(out)
-
+        out = array(self.data.sum(axis=axis, keepdims=keepdims), (self,), 'sum', need_grad=True)  
         def sumBackward():
             if self.need_grad:
                 grad = out.grad
@@ -351,9 +331,7 @@ class array:
         axis : None or int, optional
             Axis or axes along which the mean is computed.
         """
-        out = array(self.data.mean(axis=axis), (self,), 'mean', need_grad=True)
-        out.parents = regulate_parent(out)
-
+        out = array(self.data.mean(axis=axis), (self,), 'mean', need_grad=True)  
         def meanBackward():
             if self.need_grad:
                 shape = self.data.shape
@@ -370,8 +348,6 @@ class array:
     
     def max(self, axis=None, keepdims=False):
         out = array(self.data.max(axis=axis, keepdims=keepdims), (self,), 'max', need_grad=True)
-        out.parents = regulate_parent(out)
-        
         return out
         
 
